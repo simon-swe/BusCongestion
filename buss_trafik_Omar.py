@@ -20,18 +20,20 @@ clock = pygame.time.Clock()
 
 # Buss klass
 class Bus:
-    def __init__(self, angle, speed):
+    def __init__(self, angle):
         self.angle = angle
-        self.speed = speed
+        self.speed = 0
         self.stop_time = 0
         self.stopped = False
 
-    def move(self):
+    def move(self, speed):
+        self.speed = speed
         if not self.stopped:
-            self.angle += self.speed
+            self.angle += speed
             if self.angle > 2 * math.pi:
                 self.angle -= 2 * math.pi
-
+        return self.angle
+    
     def check_for_stop(self):
         if not self.stopped:
             for stop in STOP_INTERVALL:
@@ -40,10 +42,11 @@ class Bus:
                     self.stop_time = random.expovariate(LAMBDA_POSSION)*60
                     self.stopped = True
 
-    def update_stop_time(self):
+    def update_stop_time(self, next_bus):
         if self.stopped:
             self.stop_time -= 1
-            if self.stop_time <= 0:
+            distance = abs(self.angle - next_bus.angle)
+            if self.stop_time <= 0 and distance >= 2 * math.pi / NUM_BUSSES:
                 self.stopped = False
 
     def draw(self, surface):
@@ -52,7 +55,7 @@ class Bus:
         pygame.draw.circle(surface, (255, 255, 255), (int(x), int(y)), BUS_RADIUS)
 
 # Skapa bussar
-buses = [Bus(2 * math.pi * i / NUM_BUSSES, MAX_SPEED) for i in range(NUM_BUSSES)]
+buses = [Bus(2 * math.pi * i / NUM_BUSSES) for i in range(NUM_BUSSES)]
 
 # Main loop
 running = True
@@ -63,15 +66,22 @@ while running:
             running = False
 
     # Updatera buss positioner
-    for bus in buses:
-        bus.move()
+    for i, bus in enumerate(buses):
+        next_bus = buses[(i + 1) % NUM_BUSSES] 
+        bus.move(random.uniform(MAX_SPEED/10, MAX_SPEED))
         bus.check_for_stop()
-        bus.update_stop_time()
+        bus.update_stop_time(next_bus)
 
-    # Rita bussarna
+    # Rita grafik
     screen.fill((0, 0, 0))
     pygame.draw.circle(screen, (128, 128, 128), CENTER, RADIUS + BUS_RADIUS)
     pygame.draw.circle(screen, (0, 0, 0), CENTER, RADIUS - BUS_RADIUS)
+    for stop in STOP_INTERVALL:
+        stop_angle = stop
+        stop_x = CENTER[0] + RADIUS * math.cos(stop_angle)
+        stop_y = CENTER[1] + RADIUS * math.sin(stop_angle)
+        pygame.draw.line(screen, (255, 0, 0), (stop_x-10, stop_y), (stop_x+10, stop_y), 2)
+        pygame.draw.line(screen, (255, 0, 0), (stop_x, stop_y-10), (stop_x, stop_y+10), 2)
     for bus in buses:
         bus.draw(screen)
     pygame.display.flip()
