@@ -14,6 +14,10 @@ modeFrontDist = False
 NUM_BUSSTOPS = 10
 boardingPerTime = 20
 
+modeWait = False
+waitTime = 2
+modeSpeed = False
+modeDriveOver = False
 # Initiera pygame
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -40,7 +44,10 @@ class Bus:
                 if abs(self.angle - stop.angle) < self.speed:
                     self.angle = stop.angle
                     self.stop_time += stop.people/boardingPerTime
-                    stop.removePeople()
+                    stop.removePeople(1)
+                    if modeWait:
+                        self.stop_time += waitTime
+                        stop.removePeople(waitTime)
                     self.stopped = True
 
     def update_stop_time(self):
@@ -58,7 +65,7 @@ class Bus:
         y = CENTER[1] + RADIUS * math.sin(self.angle)
         pygame.draw.circle(surface, (255, 255, 255), (int(x), int(y)), BUS_RADIUS)
 
-class BusStop:
+class BusStop: #Hållplats klass
     def __init__(self, angle):
         self.angle = angle
         self.people = 0
@@ -67,8 +74,8 @@ class BusStop:
         amount = random.expovariate(LAMBDA_POSSION)
         self.people+=amount
 
-    def removePeople(self):
-        self.people -= min(self.people, boardingPerTime)
+    def removePeople(self,time):
+        self.people -= min(self.people*time, boardingPerTime*time)
 
 # Skapa bussar
 buses = [Bus(2 * math.pi * i / NUM_BUSSES) for i in range(NUM_BUSSES)]
