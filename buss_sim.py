@@ -14,11 +14,11 @@ NUM_BUSSTOPS = 10
 boardingPerTime = 10
 timeBetweenStop = 2*math.pi / NUM_BUSSTOPS / (MAX_SPEED+MAX_SPEED/10)/2
 timeOnStop = timeBetweenStop/LAMBDA_POSSION/boardingPerTime
-waitTime = 0
+waitTime = 3
 busAdded = False
 
 #Olika lösningar, inte helt implementerat
-modeWait = False #Fungerar: Väntar lite på varje hållplats
+modeWait = True #Fungerar: Väntar lite på varje hållplats
 modeWaitSched = True #Fungerar: Om den åkt längre än sin beräknade snitt vid en hållplats väntar den tills snittet har hunnit ifatt
 modeSpeed = False #Fungerar ej
 modeDriveOver = False #Fungerar ej
@@ -58,9 +58,6 @@ class Bus:
                         self.stop_time += stop.people/boardingPerTime
                         stop.people=0
                     print("\n",stop.people)
-                    stop.removePeople() #Tar bort folk från busshållsplatsen
-                    print(stop.people,"\n")
-                    
                     self.stopped = True
                     
 
@@ -117,6 +114,9 @@ def bunchingScore(buses): #Metod för att betygsätta lösningen för att motver
 buses = [Bus(2 * math.pi * i / NUM_BUSSES + 0.01) for i in range(NUM_BUSSES)]
 # Skapar hållplatser
 busStops = [BusStop(2*math.pi * i / NUM_BUSSTOPS) for i in range(NUM_BUSSTOPS)]
+
+bunchingScores = []
+
 # Main loop
 running = True
 time = 0
@@ -162,10 +162,14 @@ while running:
         busAdded = True
 
     if time==5000: #Bestämmer hur länge programmet kör (iterationer)
-        print("Score: ",bunchingScore(buses))
         print(busAdded) #Om man har lagt till 
         break
-
+    
+    if time%100==0:
+        bunchingScores.append((bunchingScore(buses), time))
     clock.tick(600)
 
+for i in bunchingScores:
+    print("Score: ", i[0], " Vid tid: ", i[1])
+print("Tillagd buss: ", busAdded)
 pygame.quit()
