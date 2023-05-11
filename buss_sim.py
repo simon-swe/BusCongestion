@@ -1,6 +1,8 @@
 import pygame
 import math
 import random
+import numpy as np
+import matplotlib.pyplot as plt
 
 # Konstanter
 WIDTH, HEIGHT = 800, 800
@@ -19,7 +21,7 @@ busAdded = False
 
 #Olika lösningar, inte helt implementerat
 modeWait = True #Fungerar: Väntar lite på varje hållplats
-modeWaitSched = True #Fungerar: Om den åkt längre än sin beräknade snitt vid en hållplats väntar den tills snittet har hunnit ifatt
+modeWaitSched = False #Fungerar: Om den åkt längre än sin beräknade snitt vid en hållplats väntar den tills snittet har hunnit ifatt
 modeSpeed = False #Fungerar ej
 modeDriveOver = False #Fungerar ej
 modeExtraBus = False #Fungerar men tror att mätmetoden som utvärderar lösningen inte fungerar då. quick fix
@@ -173,3 +175,21 @@ for i in bunchingScores:
     print("Score: ", i[0], " Vid tid: ", i[1])
 print("Tillagd buss: ", busAdded)
 pygame.quit()
+
+
+# Dela i två listor
+deviation = [x[0] for x in bunchingScores]
+time = [x[1] for x in bunchingScores]
+
+# Omvandla till np array
+deviation_np = np.array(deviation)
+time_np = np.array(time)
+
+# Plotta värdet
+plt.plot(time_np, deviation_np, label="bunchingScores")
+plt.xlabel("tid")
+plt.ylabel("bunchingScores")
+plt.legend()
+plt.title("modeWait") 
+plt.grid()
+plt.show()
